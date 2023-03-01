@@ -1,0 +1,20 @@
+version: 0.4.1
+
+stamp:
+  xpos: 7
+  angle: 20.0
+
+overleaf:
+  id: 62f169d4cce9f5c2976ac131
+  push:
+    - src/tex/figures
+    - src/tex/output
+    - src/tex/ar-1col.cls
+    - src/tex/ar-style2.bst
+  pull:
+    - src/tex/ms.tex
+    - src/tex/bib.bib
+
+scripts:
+  ipynb:
+    jupyter execute {script}
