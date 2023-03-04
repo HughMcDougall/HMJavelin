@@ -278,6 +278,8 @@ plt.show()
 #Run
 #Make sampler
 init_params = dict(true_params)
+if True:
+    init_params.pop('lags')
 
 print("Beginning sampling :)")
 sampler = infer.MCMC(
@@ -286,9 +288,9 @@ sampler = infer.MCMC(
         init_strategy=infer.init_to_value(values = init_params),
     ),
 
-    num_warmup=1000,
-    num_samples=6000,
-    num_chains=1,
+    num_warmup  = 100,
+    num_samples = 100,
+    num_chains  = 50,
     progress_bar=True,
 )
 
