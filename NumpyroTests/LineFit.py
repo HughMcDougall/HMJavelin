@@ -275,31 +275,33 @@ for i in range(len(mock_lcs)):
 plt.show()
 
 #============================================
-#Run
-#Make sampler
-init_params = dict(true_params)
-if True:
-    init_params.pop('lags')
+if __name__=="__main__":
 
-print("Beginning sampling :)")
-sampler = infer.MCMC(
-    infer.NUTS(
-        model,
-        init_strategy=infer.init_to_value(values = init_params),
-    ),
+    #Make sampler
+    '''To speed things up, start at the truth values for all except lags'''
+    init_params = dict(true_params)
+    if True:
+        init_params.pop('lags')
 
-    num_warmup  = 100,
-    num_samples = 100,
-    num_chains  = 50,
-    progress_bar=True,
-)
+    print("Beginning sampling :)")
+    sampler = infer.MCMC(
+        infer.SA(
+            model,
+            init_strategy=infer.init_to_value(values = init_params),
+        ),
 
-#run
-sampler.run(jax.random.PRNGKey(12), mock_data)
+        num_warmup  = 100,
+        num_samples = 100,
+        num_chains  = 50,
+        progress_bar=True,
+    )
 
-c = ChainConsumer()
-c.add_chain(sampler.get_samples()['lags'], parameters=["lag1", "lag2"])
-c.configure(summary=True, cloud=True, sigmas=np.linspace(0, 2, 3))
-cfig=c.plotter.plot( truth =np.array(true_params['lags']))
-cfig.tight_layout()
-plt.show()
+    #run
+    sampler.run(jax.random.PRNGKey(12), mock_data)
+
+    c = ChainConsumer()
+    c.add_chain(sampler.get_samples()['lags'], parameters=["lag1", "lag2"])
+    c.configure(summary=True, cloud=True, sigmas=np.linspace(0, 2, 3))
+    cfig=c.plotter.plot( truth =np.array(true_params['lags']))
+    cfig.tight_layout()
+    plt.show()

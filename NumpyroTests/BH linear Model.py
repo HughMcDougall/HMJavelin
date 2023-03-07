@@ -141,7 +141,7 @@ Edata=sort(E)[1]
 Ydata=sort(Y)[1]
 
 sampler = infer.MCMC(
-        infer.NUTS(model_one),
+        infer.SA(model_one),
         num_warmup=400,
         num_samples=500,
         num_chains=10,
