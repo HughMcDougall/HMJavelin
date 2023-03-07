@@ -77,8 +77,6 @@ def model_one(I,X,E=None,Y=None):
         c = numpyro.sample("c", dist.Uniform(-2, 6))
         m = numpyro.sample("m", dist.Uniform(-1, 3))
         pred_m = (M*c + C)
-        numpyro.factor('linrel', -( ( (m-pred_m ) / SIG)**2))
-        numpyro.factor('linrel_norm', - jnp.log(jnp.sqrt(2 * jnp.pi) * SIG))
 
         numpyro.sample('linrel', numpyro.distributions.Normal(0,SIG), obs=(m-pred_m) )
 
@@ -86,46 +84,6 @@ def model_one(I,X,E=None,Y=None):
     predicted = m[I]*X + c[I]
     with numpyro.plate("data", len(X)):
         numpyro.sample("obs", dist.Normal(predicted, E), obs=Y)
-
-def model_two(I, X, E=None, Y=None):
-    # Population Properties
-    C = numpyro.sample("C", dist.Uniform(-1, 3))
-    M = numpyro.sample("M", dist.Uniform(-2, 6))
-
-    SIG = numpyro.sample("SIG", dist.Uniform(0, 2))
-
-    no_sources = len(np.unique(I))
-
-    with numpyro.plate("sources", no_sources):
-        c = numpyro.sample("c", dist.Uniform(-2, 6))
-
-        pred_m = (M * c + C)
-        m = numpyro.sample("m", dist.Normal(pred_m, SIG))
-
-    # Source Properties
-    predicted = m[I] * X + c[I]
-
-    with numpyro.plate("data", len(X)):
-        numpyro.sample("obs", dist.Normal(predicted, E), obs=Y)
-
-
-def model_three(I, X, E=None, Y=None):
-    #Population Properties
-    C   = numpyro.sample("C", dist.Uniform(-1, 3))
-    M   = numpyro.sample("M", dist.Uniform(-2,6) )
-
-    SIG = numpyro.sample("SIG", dist.Uniform(0,2) )
-
-    no_sources = len(np.unique(I))
-
-    #Source Properties
-    with numpyro.plate("sources",no_sources):
-        #Vague priors for source
-        c = numpyro.sample("c", dist.Uniform(-2, 6))
-        m = numpyro.sample("m", dist.Uniform(-1, 3))
-        pred_m = (M*c + C)
-
-        numpyro.sample('linrel', numpyro.distributions.Normal(0,SIG), obs=(m-pred_m) )
 
 #==========================================
 
