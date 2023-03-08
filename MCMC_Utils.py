@@ -219,7 +219,7 @@ def MCMCrun_batch(targfolder,  mode = 'twoline', MCMC_params = MCMC_grade(), ver
     '''
     MCMCrun_batch(targfolder, MCMC_params = MCMC_grade()
 
-    Runs MCMCrun_single for every sim / subsamling in a batch
+    Runs MCMCrun_single for every sim / subsampling in a batch
 
     Inputs
 
