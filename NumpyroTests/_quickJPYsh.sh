@@ -1,2 +1,2 @@
-conda activate testconda
+conda activate nestconda
 jupyter notebook

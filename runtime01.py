@@ -14,14 +14,14 @@ HM 20/9
 '''
 
 sim=sim_params()
-sim.delay1=250
-sim.delay2=260
+sim.delay1=150
+sim.delay2=160
 sim.cont_tau=400
 
 #====================================
-batch_name  = "jittertest3"
+batch_name  = "multilag"
 grade       = highqual
-nosims      = 4
+nosims      = 1
 sample_types=[ClearSignal, JavelinExample, source_B1, source_A1, source_B6, source_A7]
 #sample_types=[ClearSignal, JavelinExample, source_A1]
 sample_types=[source_B1, source_A1, source_B6, source_A7]
@@ -32,7 +32,7 @@ batch_folder= "./Data/fakedata/" + batch_name
 print("Starting Simulations")
 #simgen_batch(SAMPLING_PARAMS=sample_types, nosims = nosims, targfolder=batch_folder,    sim_params=sim, verbose=True)
 print("Doing MCMC")
-MCMCrun_batch(targfolder = batch_folder, MCMC_params=grade,  verbose=True, mode = 'twoline',       output_burn=False,   output_cont=False, output_logp  = False, skipexisting=True)
+#MCMCrun_batch(targfolder = batch_folder, MCMC_params=grade,  verbose=True, mode = 'twoline',       output_burn=False,   output_cont=False, output_logp  = False, skipexisting=True)
 print("Doing Figs")
 #batch_analysis(batch_folder,grade.name, histograms = True, contours=True, correltimes=False, acceptance_ratios=False,  verbose=True, mode='all')
 print("Done.")
