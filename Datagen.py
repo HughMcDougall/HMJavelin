@@ -26,7 +26,7 @@ Changes
 '''
 
 
-def simgen(sim_targ_folder, sim_realization, sampling_params= subsampling_grade(), makefigs = True, fig_targ_folder= None, verbose = False, prefix=None):
+def simgen(sim_targ_folder, sim_realization, sampling_params= subsampling_grade(), makefigs = True, fig_targ_folder= None, verbose = False, prefix=None, sim_params=None):
     '''
     Takes a DRW realization and subsamples it, outputting to sim_targ_folder
     Outputs to a folder 'sim_targ_folder/name/[FILES]'
@@ -83,6 +83,10 @@ def simgen(sim_targ_folder, sim_realization, sampling_params= subsampling_grade(
     np.savetxt( fname=sim_targ_folder+"/cont.dat",    X=np.vstack([Tcont,Ycont,Econt]).T     )
     np.savetxt( fname=sim_targ_folder+"/line1.dat",   X=np.vstack([Tline1,Yline1,Eline1]).T  )
     np.savetxt( fname=sim_targ_folder+"/line2.dat",   X=np.vstack([Tline2,Yline2,Eline2]).T  )
+
+    #Save truth values
+    if sim_params!=None:
+        np.save(arr=[sim_params], file = sim_targ_folder+"/sim_params")
 
     if makefigs:
         if verbose: print("Saving images to",fig_targ_folder)
@@ -233,7 +237,8 @@ def simgen_batch(sim_params = sim_params(), SAMPLING_PARAMS=[JavelinExample], no
                    makefigs         = True,
                    fig_targ_folder  = figfolder,
                    verbose          = verbose,
-                   prefix           = "%.2i_" %j)
+                   prefix           = "%.2i_" %j,
+                   sim_params       = sim_params)
 
     dirfile.close() #Close directory
 

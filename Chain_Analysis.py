@@ -5,6 +5,7 @@ import chainconsumer
 from reftable import *
 from glob import glob
 import acor
+from copy import deepcopy as copy
 
 '''
 Chain_Analysis.py
@@ -57,14 +58,14 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
     if not os.path.exists(figfolder): os.makedirs(figfolder)
     #------
     #Look for simulation parameters
+    
     param_url = target_folder + "/sim_params.npy"
     try:
-        sim_params = np.load(param_url, allow_pickle=True)[0]
+        root_sim_params = np.load(param_url, allow_pickle=True)[0]
         if verbose: print("Loading fixed parameters from %s" % param_url)
     except:
-        sim_params = sim_params()
+        root_sim_params = None
         if verbose: print("Unable to locate sim params for truth values. Loading default")
-
 
 
     #Load MCMC Parameters
@@ -99,6 +100,22 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
                 #Load Chain
                 CHAIN = np.loadtxt(chain_url)
 
+                #Try to load truth values
+                param_url = folder + "/sim_params.npy"
+                try:
+                    sim_params = np.load(param_url, allow_pickle=True)[0]
+                    if verbose: print("Loading fixed parameters from %s" % param_url)
+                except:
+                    sim_params = None
+                    if verbose: print("Unable to locate sim params for truth values. Loading default")
+                if sim_params==None:
+                    if root_sim_params==None:
+                        del_truth=None
+                    else:
+                        del_truth=[root_sim_params.delay1,root_sim_params.delay2]
+                else:
+                    del_truth=[sim_params.delay1,sim_params.delay2]   
+                        
                 #----------------------
                 #Do hist plots
 
@@ -111,8 +128,9 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
                     ax.hist(TAU_1, histtype="step", density=True, bins=64, color = line1_color)
                     ax.hist(TAU_2, histtype="step", density=True, bins=64, color = line2_color)
 
-                    ax.axvline(sim_params.delay1, c=line1_color, linewidth = 2 )
-                    ax.axvline(sim_params.delay2, c=line2_color, linewidth = 2 )
+                    if not del_truth==None:
+                        ax.axvline(del_truth[0], c=line1_color, linewidth = 2 )
+                        ax.axvline(del_truth[1], c=line2_color, linewidth = 2 )
 
                 elif runtype == 'line1':
                     TAU_1 = CHAIN[:, 2]
@@ -128,6 +146,7 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
 
                     ax.axvline(sim_params.delay2, c='orange', color = line2_color, linewidth = 2 )
 
+                #Plot seasonal lines
                 for t in range(0, taumax, 180):
                     ax.axvline(t, ls='--', alpha=0.5, lw=2, color='grey')
 
@@ -197,7 +216,8 @@ def do_chain_contours(folder, grade, sim_params=None, MCMC_params=None,  mode='a
         #Do chainconsumer contours for entire set
         main_cc = chainconsumer.ChainConsumer().add_chain(cc_chain, parameters=paramnames)
         main_cc.configure(colors=[c],sigmas=contour_sigmas)
-        cfig = main_cc.plotter.plot(truth=truth_params)
+        cfig = main_cc.plotter.plot(truth=truth_params) #[DISABLED]
+        #cfig = main_cc.plotter.plot()
         cfig.tight_layout()
         cfig.savefig(folder + "/contours_all-%s-%s.png" % (runtype, grade), format='png')
         plt.close(cfig)
@@ -207,7 +227,8 @@ def do_chain_contours(folder, grade, sim_params=None, MCMC_params=None,  mode='a
             #Make Chainconsumer plot
             delay_cc = chainconsumer.ChainConsumer().add_chain(np.vstack([CHAIN[:, 2], CHAIN[:, 5]]).T, parameters=["$\Delta t_1$", "$\Delta t_2$"])
             delay_cc.configure(colors=[twoline_color], sigmas=contour_sigmas)
-            cfig = delay_cc.plotter.plot(truth=[sim_params.delay1, sim_params.delay2])
+            cfig = delay_cc.plotter.plot(truth=[sim_params.delay1, sim_params.delay2]) #[DISABLED]
+            #cfig = delay_cc.plotter.plot(extents=[(0,800),(0,800)])
 
             #Arrange and save figure
             cfig.tight_layout()
@@ -240,7 +261,8 @@ def do_continuum_contours(folder, grade, sim_params=None, MCMC_params=None, verb
     #Do chainconsumer contours for entire set
     cc = chainconsumer.ChainConsumer().add_chain(CHAIN, parameters=paramnames)
     cc.configure(colors=[continuum_color],sigmas=contour_sigmas)
-    cfig = cc.plotter.plot(truth=truth_params)
+    cfig = cc.plotter.plot(truth=truth_params) #[DISBLED]
+    #cfig = cc.plotter.plot()
     cfig.tight_layout()
     cfig.savefig(folder + "/contours_continuum-%s.png" % (grade), format='png')
     plt.close(cfig)
@@ -294,14 +316,16 @@ def do_comparison_contours(folder, grade, sim_params=None, MCMC_params=None, ver
     #Do plots
         # All Parameters
     main_chain.configure(colors=[twoline_color,line1_color,line2_color],linestyles=["-", "--","--"], shade_alpha=[.6,.8,.8],sigmas=contour_sigmas)
-    mainplot = main_chain.plotter.plot(truth=truth_params)
+    mainplot = main_chain.plotter.plot(truth=truth_params)#[DISABLED]
+    #mainplot = main_chain.plotter.plot() 
     mainplot.tight_layout()
     mainplot.savefig(folder+"/contours_combined_all-%s" %grade)
     plt.close(mainplot)
 
         #Delay delay comparison
     delay_chain.configure(colors=[twoline_color,'cyan'],linestyles=['-','-'],shade_alpha=[.6,.6], legend_kwargs={"loc": "upper left", "fontsize": 10},legend_location=(0, 0),sigmas=contour_sigmas)
-    delayplot = delay_chain.plotter.plot(truth=[sim_params.delay1,sim_params.delay2])
+    delayplot = delay_chain.plotter.plot(truth=[sim_params.delay1,sim_params.delay2])#[DISABLED]
+    #delayplot = delay_chain.plotter.plot() 
     delayplot.tight_layout()
     delayplot.savefig(folder+"/contours_combined_delaysonly-%s" %grade)
     plt.close(delayplot)
@@ -395,10 +419,10 @@ def batch_analysis(target_folder,  grade, histograms=True, contours = True, corr
     #Look for simulation parameters
     param_url = target_folder + "/sim_params.npy"
     try:
-        sim_params = np.load(param_url, allow_pickle=True)[0]
+        root_sim_params = np.load(param_url, allow_pickle=True)[0]
         if verbose: print("Loading fixed parameters from %s" % param_url)
     except:
-        sim_params = sim_params()
+        root_sim_params = None
         if verbose: print("Unable to locate sim params for truth values. Loading default")
 
     #Load MCMC Parameters
@@ -428,6 +452,17 @@ def batch_analysis(target_folder,  grade, histograms=True, contours = True, corr
                     continue  # Safety check to avoid loading bad chain
                 else:
                     if verbose: print("\tDoing Plots for %s" %chain_url)
+
+                #Try to load truth values
+                param_url = folder + "/sim_params.npy"
+                try:
+                    sim_params = np.load(param_url, allow_pickle=True)[0]
+                    if verbose: print("Loading fixed sim specific parameters from %s" % param_url)
+                except:
+                    sim_params = None
+                    if verbose: print("Unable to locate sim params for truth values at %s. Using Root" %param_url)
+                    
+                if sim_params==None: sim_params=copy(root_params)
 
                 #Load Chain
                 if not( contours or correltimes or acceptance_ratios): continue
