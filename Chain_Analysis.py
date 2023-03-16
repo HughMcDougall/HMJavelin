@@ -62,10 +62,10 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
     param_url = target_folder + "/sim_params.npy"
     try:
         root_sim_params = np.load(param_url, allow_pickle=True)[0]
-        if verbose: print("Loading fixed parameters from %s" % param_url)
+        if verbose: print("Loading root parameters from %s" % param_url)
     except:
         root_sim_params = None
-        if verbose: print("Unable to locate sim params for truth values. Loading default")
+        if verbose: print("Unable to locate root sim params for truth values")
 
 
     #Load MCMC Parameters
@@ -107,7 +107,7 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
                     if verbose: print("Loading fixed parameters from %s" % param_url)
                 except:
                     sim_params = None
-                    if verbose: print("Unable to locate sim params for truth values. Loading default")
+                    if verbose: print("Unable to locate sim params, defaulting to root params for sim %s" %folder)
                 if sim_params==None:
                     if root_sim_params==None:
                         del_truth=None
@@ -127,6 +127,7 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
 
                     ax.hist(TAU_1, histtype="step", density=True, bins=64, color = line1_color)
                     ax.hist(TAU_2, histtype="step", density=True, bins=64, color = line2_color)
+                    
 
                     if not del_truth==None:
                         ax.axvline(del_truth[0], c=line1_color, linewidth = 2 )
@@ -137,14 +138,18 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
 
                     ax.hist(TAU_1, histtype="step", density=True, bins=64, color = line1_color)
 
-                    ax.axvline(sim_params.delay1, c='blue', color = line1_color, linewidth = 2 )
+                    if not del_truth==None:
+                        ax.axvline(del_truth[0], c=line1_color, linewidth = 2 )
 
                 elif runtype == 'line2':
                     TAU_2 = CHAIN[:, 2]
 
                     ax.hist(TAU_2, histtype="step", density=True, bins=64, color = line2_color)
 
-                    ax.axvline(sim_params.delay2, c='orange', color = line2_color, linewidth = 2 )
+                    if not del_truth==None:
+                        ax.axvline(del_truth[1], c=line2_color, linewidth = 2 )
+                ax.set_xlim([0, taumax])
+                #--------------------------------------------
 
                 #Plot seasonal lines
                 for t in range(0, taumax, 180):
@@ -462,7 +467,7 @@ def batch_analysis(target_folder,  grade, histograms=True, contours = True, corr
                     sim_params = None
                     if verbose: print("Unable to locate sim params for truth values at %s. Using Root" %param_url)
                     
-                if sim_params==None: sim_params=copy(root_params)
+                if sim_params==None: sim_params=copy(root_sim_params)
 
                 #Load Chain
                 if not( contours or correltimes or acceptance_ratios): continue

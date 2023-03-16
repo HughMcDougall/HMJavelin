@@ -19,12 +19,12 @@ sim.delay2=560
 sim.cont_tau=400
 
 #====================================
-batch_name  = "multilag"
+batch_name  = "longrun_17_10"
 grade       = highqual
 nosims      = 2
 #sample_types=[ClearSignal, JavelinExample, source_B1, source_A1, source_B6, source_A7]
 #sample_types=[ClearSignal, JavelinExample, source_A1]
-sample_types=[source_B1, source_A1, source_B6, source_A7]
+#sample_types=[source_B1, source_A1, source_B6, source_A7]
 
 #====================================
 batch_folder= "./Data/fakedata/" + batch_name
