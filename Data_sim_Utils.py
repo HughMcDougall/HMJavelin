@@ -318,22 +318,63 @@ def mirror_sample(Tsource,  Xsource, Tmirror,   Xmirror,    Emirror, Emethod='ga
 
 #================================================================
 if __name__=="__main__":
-    Tsource=np.linspace(0,1000,1024*4)
-    Xsource = np.sin(Tsource*2*np.pi/100)
+    delay = 120
+    tmax = 5*360
+    tau = 400
 
-    Tseason, Xseason,Eseason = season_sample(Tsource, Xsource, T_season=max(Tsource)/6, dt=max(Tsource)/6/8, Eav=.1, Espread=0.01, Emethod='gauss', garble=False, rand_space=False)
-    Tseason-=Tseason[0]
-    plt.plot(Tsource, Xsource)
-    plt.errorbar(Tseason, Xseason, yerr=Eseason, fmt='x')
+    #Generate underlying signals:
+    TDRW,XDRW = DRW_sim(dt = 0.1, tmax= tmax, tau= 400, siginf=1, x0=None, E0=0, method='square')
+    XLINE = tophat_convolve(Tin=TDRW, Xin=XDRW,
+                                 tau= 400,
+                                 siginf=1, method='square',
+                                 delay=delay,   amp=1,
+                                 width=30, delay_from_center=True)
 
+    XLINE_plot = tophat_convolve(Tin=TDRW, Xin=XDRW,
+                                 tau= 400,
+                                 siginf=1, method='square',
+                                 delay=0,   amp=1,
+                                 width=30, delay_from_center=True)
 
-    Ttest, Xtest = Tsource[np.where(Tsource < max(Tseason))[0]], Xsource[np.where(Tsource < max(Tseason))[0]]
-    Tseason += 1000
-    Tmirror, Xmirror, Emirror = mirror_sample(Ttest,Xtest,Tmirror=Tseason, Xmirror=Xseason, Emirror=Eseason, garble=False)
+    fig,ax = plt.subplots(2,1, figsize=(8,4), sharex=True)
+    
+    ax[0].plot(TDRW/tau,XDRW , c='blue')
+    ax[0].set_xlabel("time/timescale")
+    ax[0].set_ylabel("Signal Strength")
+    
+    ax[0].set_yticks([], [])
+    
+    ax[1].plot(TDRW/tau,XLINE_plot , c='green')
+    ax[1].set_xlabel("time/timescale")
+    ax[1].set_ylabel("Signal Strength")
+    ax[1].set_yticks([], [])
 
-    plt.errorbar(Tmirror, Xmirror, yerr=Emirror, fmt='.')
+    #Get fake measurements
+    Tc,Xc,Ec = season_sample(TDRW, XDRW, T_season=180, dt=7, Eav=0.2, Espread=0.2, Emethod='gauss', garble=True, rand_space=True)
+    Tl,Xl,El = season_sample(TDRW, XLINE, T_season=180, dt=30, Eav=0.5, Espread=0.4, Emethod='gauss', garble=True, rand_space=True)
 
+    fig2,ax2 = plt.subplots(2,1, figsize=(8,4), sharex=True)
+
+    ax2[0].errorbar(Tc/tau, Xc, Ec, fmt="none",c='blue')
+    ax2[0].set_ylabel("Signal Strength")
+    ax2[0].set_yticks([], [])
+    ax2[0].axvline(tmax/2/tau,ls='--',c='k')
+    
+    ax2[1].errorbar(Tl/tau,Xl,El, fmt="none",c='green')
+    ax2[1].set_xlabel("time/timescale")
+    ax2[1].set_ylabel("Signal Strength")
+    ax2[1].set_yticks([], [])
+    ax2[1].axvline((tmax+delay)/2/tau,ls='--',c='k')
+
+    #Combined
+    fig3= plt.figure(figsize=(8,2))
+    plt.errorbar(Tc/tau, Xc, Ec, fmt="none",c='blue')
+    plt.errorbar((Tl-delay)/tau,Xl,El, fmt="none",c='green')
+    plt.xlabel("time/timescale")
+    plt.ylabel("Signal Strength")
+    plt.yticks([], [])
     plt.show()
+    
 
 #==================================
 

@@ -184,6 +184,8 @@ def do_hists(target_folder,grade,  verbose=False, mode='all'):
 def do_chain_contours(folder, grade, sim_params=None, MCMC_params=None,  mode='all', verbose=False):
     if verbose: print("\t\t Getting Contours")
 
+    taumax = MCMC_params.laglimits[-1]
+
 
     runtypes = runtypes_from_mode(mode)
     for runtype in runtypes:
@@ -221,8 +223,7 @@ def do_chain_contours(folder, grade, sim_params=None, MCMC_params=None,  mode='a
         #Do chainconsumer contours for entire set
         main_cc = chainconsumer.ChainConsumer().add_chain(cc_chain, parameters=paramnames)
         main_cc.configure(colors=[c],sigmas=contour_sigmas)
-        cfig = main_cc.plotter.plot(truth=truth_params) #[DISABLED]
-        #cfig = main_cc.plotter.plot()
+        cfig = main_cc.plotter.plot(truth=truth_params)
         cfig.tight_layout()
         cfig.savefig(folder + "/contours_all-%s-%s.png" % (runtype, grade), format='png')
         plt.close(cfig)
@@ -231,9 +232,8 @@ def do_chain_contours(folder, grade, sim_params=None, MCMC_params=None,  mode='a
         if runtype == 'twoline':
             #Make Chainconsumer plot
             delay_cc = chainconsumer.ChainConsumer().add_chain(np.vstack([CHAIN[:, 2], CHAIN[:, 5]]).T, parameters=["$\Delta t_1$", "$\Delta t_2$"])
-            delay_cc.configure(colors=[twoline_color], sigmas=contour_sigmas)
-            cfig = delay_cc.plotter.plot(truth=[sim_params.delay1, sim_params.delay2]) #[DISABLED]
-            #cfig = delay_cc.plotter.plot(extents=[(0,800),(0,800)])
+            delay_cc.configure(colors=[twoline_color], sigmas=contour_sigmas, summary = False)
+            cfig = delay_cc.plotter.plot(truth=[sim_params.delay1, sim_params.delay2], extents=[(0,taumax),(0,taumax)])
 
             #Arrange and save figure
             cfig.tight_layout()

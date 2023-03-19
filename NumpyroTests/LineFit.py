@@ -8,8 +8,6 @@ import matplotlib.pyplot as plt
 import warnings
 import os
 
-import arviz as az
-import corner
 from chainconsumer import ChainConsumer
 
 import jax
@@ -22,10 +20,7 @@ from tinygp import GaussianProcess, kernels, transforms
 import tinygp
 
 import matplotlib as mpl
-from astropy.table import Table
 from functools import partial
-
-
 
 #============================================
 #Settup
@@ -36,7 +31,7 @@ plt.close()
 warnings.filterwarnings("ignore", category=FutureWarning)
 numpyro.set_host_device_count(1)
 
-#Get
+#Get OzDES Data
 #PLACEHOLDER ONLY DO NOT LOOK
 os.chdir('..')
 from reftable import *
@@ -49,6 +44,7 @@ os.chdir('./NumpyroTests')
 cont_data = {'T': Tcont, 'Y': Xcont, 'E': Econt}
 line1_data = {'T': Tline1, 'Y': Xline1, 'E': Eline1}
 line2_data = {'T': Tline2, 'Y': Xline2, 'E': Eline2}
+
 #============================================
 #Utility Funcs
 def mean_func(means, X):
@@ -99,11 +95,14 @@ def banded_to_lc(data):
             'E':E,
             })
 
-
     return(out)
 
 #============================================
 #Main Working Funcs
+#============================================
+
+#============================================
+#TinyGP side
 
 def make_mock_data(data, params, basekernel=tinygp.kernels.Exp):
     '''
@@ -188,14 +187,18 @@ def build_gp(data, params, basekernel=tinygp.kernels.Exp):
     out = (gp, sort_inds)
     return(out)
 
+#============================================
+#Numpyro Side
 
 def model(data):
-    #Cont
+    #Continuum properties
     log_sigma   = numpyro.sample('log_sigma',   numpyro.distributions.Uniform(-5,5))
     log_tau     = numpyro.sample('log_tau',     numpyro.distributions.Uniform(0,10))
 
+    #Find maximum number of bands in modelling
     Nbands = jnp.max(data['bands'])+1
 
+    #Though we fit in logspace, we need non-log space properties for feeding to the GP
     cont_scale  = numpyro.deterministic('cont_scale',   jnp.exp(log_sigma))
     tau_d       = numpyro.deterministic('tau_d',        jnp.exp(log_tau))
 
@@ -214,10 +217,10 @@ def model(data):
         'means': means,
     }
 
-    #build gp
+    #Build TinyGP Process
     gp, sort_inds = build_gp(data, params)
 
-    #Sample
+    #Apply likelihood
     numpyro.sample('y', gp.numpyro_dist(), obs=data['Y'][sort_inds])
 
     #==========================================
