@@ -223,25 +223,6 @@ def model(data):
     #Apply likelihood
     numpyro.sample('y', gp.numpyro_dist(), obs=data['Y'][sort_inds])
 
-    #==========================================
-    #Additional conditions. For later.
-    if False:
-        #Lag similarity prior
-        numpyro.sample('lag similarity', numpyro.distributions.Normal(1,0.1), obs = lags[0] / lags[1])
-
-        # Apply Addtl. Factors
-        '''
-        L = means[0]
-        log10_RL_lag_1 = jnp.log10(L) * alpha[0] + beta[0]
-        log10_RL_lag_2 = jnp.log10(L) * alpha[1] + beta[1]
-    
-        log10_lag1 = jnp.log10(lags[0])
-        log10_lag2 = jnp.log10(lags[1])
-    
-        numpyro.factor('RL-line1', - ((log10_RL_lag_1 - log10_lag1) / delta[0] ) **2 - jnp.log(jnp.sqrt(2 * jnp.pi) * delta[0]))
-        numpyro.factor('RL-line2' - ((log10_RL_lag_2 - log10_lag2) / delta[1] ) **2 - jnp.log(jnp.sqrt(2 * jnp.pi) * delta[1]))
-        '''
-
 
 #============================================
 #Tests
