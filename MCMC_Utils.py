@@ -57,7 +57,8 @@ def MCMCrun_single(targdir, MCMC_params = MCMC_grade(), mode = 'twoline', dataso
 
     #Load MCMC Parameters
     nwalkers    = MCMC_params.nwalkers
-    nchain=nburn= MCMC_params.nchain
+    nburn       = MCMC_params.nburn
+    nchain      = MCMC_params.nchain
 
     contwalkers = MCMC_params.contwalkers
     contchain   = MCMC_params.contchain

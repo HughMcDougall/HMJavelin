@@ -470,9 +470,11 @@ source_A7       = data_source(cont_url= "../../OzDESRM-main/Data/Y6+SV_Processed
 longchain_test  = MCMC_grade(nwalkers= 2,       nchain = 700,   nburn = 1,      contwalkers = 100,  contchain = 300,    contburn =150,  name='longchain_test')
 ultrahighqual   = MCMC_grade(nwalkers= 1000,    nchain = 700,   nburn = 1,      contwalkers = 100,  contchain = 300,    contburn =150,  name='ultrahighqual' )
 highqual        = MCMC_grade(nwalkers= 300,     nchain = 600,   nburn = 200,    contwalkers = 100,  contchain = 300,    contburn =150,  name='highqual' )
+highqual_longburn        = MCMC_grade(nwalkers= 300,     nchain = 600,   nburn = 2000,    contwalkers = 100,  contchain = 300,    contburn =150,  name='highqual_longburn' )
 lowqual         = MCMC_grade(nwalkers= 50,      nchain = 50,    nburn = 10,     contwalkers = 50,   contchain = 50,     contburn =10,   name='lowqual' )
 runtest         = MCMC_grade(nwalkers= 16,      nchain = 5,     nburn = 1,      contwalkers = 4,    contchain = 5,      contburn =1,    name='runtest' )
 long_burn       = MCMC_grade(nwalkers= 100,     nchain = 3000,  nburn = 600,   contwalkers = 100,    contchain = 300,      contburn =150,    name='long_burn' )
+one_chain         = MCMC_grade(nwalkers= 16,      nchain = 1000,     nburn = 1,      contwalkers = 4,    contchain = 1000,      contburn =1,    name='one_chain' )
 
 free_all_longchain           = MCMC_grade(nwalkers= 20, nchain = 600, nburn = 1, contwalkers = 100, contchain = 300, contburn =150, do_continuum =False, fixed_conttau = False, fixed_contvar = False, fixed_widths = True, fixed_delays=False, fixed_linevar=False, name="free_all")
 restrict_all_longchain       = MCMC_grade(nwalkers= 20, nchain = 600, nburn = 1, contwalkers = 100, contchain = 300, contburn =100, do_continuum =False, fixed_conttau = False, fixed_contvar = False, fixed_widths = True, fixed_delays=False, fixed_linevar=False, name="restrict_all")

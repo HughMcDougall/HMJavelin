@@ -125,9 +125,9 @@ def tophat_convolve(Tin,Xin, tau, siginf=1, method='square',delay=0,amp=1,width=
     if width==None or width<dt:
         width=dt
     if width+delay<=dt:
-        delay=0
-        width=dt
-        Npad=1
+        delay = 0
+        width = dt
+        Npad  = 1
     else:
         Npad = int((delay + width) // dt)
 
@@ -140,7 +140,7 @@ def tophat_convolve(Tin,Xin, tau, siginf=1, method='square',delay=0,amp=1,width=
     PadLeft =DRW_sim(dt,dt*(Npad-1),tau,siginf,x0=Xin[0],method='square')[1]
     PadRight=DRW_sim(dt,dt*(Npad-1),tau,siginf,x0=Xin[-1],method='square')[1]
     PadLeft =PadLeft[::-1]
-    Xpadded = np.hstack([PadLeft, Xin, PadRight])
+    Xpadded = np.concatenate([PadLeft, Xin, PadRight])
 
 
     #Do convolution
@@ -318,12 +318,14 @@ def mirror_sample(Tsource,  Xsource, Tmirror,   Xmirror,    Emirror, Emethod='ga
 
 #================================================================
 if __name__=="__main__":
-    delay = 120
+    delay = 180*1.5
     tmax = 5*360
     tau = 400
 
+    np.random.seed(12)
+
     #Generate underlying signals:
-    TDRW,XDRW = DRW_sim(dt = 0.1, tmax= tmax, tau= 400, siginf=1, x0=None, E0=0, method='square')
+    TDRW, XDRW = DRW_sim(dt = 0.1, tmax= tmax, tau= 400, siginf=1, x0=None, E0=0, method='square')
     XLINE = tophat_convolve(Tin=TDRW, Xin=XDRW,
                                  tau= 400,
                                  siginf=1, method='square',
@@ -336,18 +338,25 @@ if __name__=="__main__":
                                  delay=0,   amp=1,
                                  width=30, delay_from_center=True)
 
-    fig,ax = plt.subplots(2,1, figsize=(8,4), sharex=True)
-    
-    ax[0].plot(TDRW/tau,XDRW , c='blue')
-    ax[0].set_xlabel("time/timescale")
-    ax[0].set_ylabel("Signal Strength")
-    
+    fig,ax = plt.subplots(2,1, figsize=(6,2), sharex=True)
+
+    ax[0].plot(TDRW/tau,XDRW , c='blue', label='Driving Continuum')
+    ax[1].plot(TDRW/tau, XLINE , c='green',label='Driven Response')
+
+    fig.supxlabel("Time / Timescale")
+    fig.supylabel("Signal Strength")
+
     ax[0].set_yticks([], [])
-    
-    ax[1].plot(TDRW/tau,XLINE_plot , c='green')
-    ax[1].set_xlabel("time/timescale")
-    ax[1].set_ylabel("Signal Strength")
     ax[1].set_yticks([], [])
+
+    ax[0].legend(loc='upper left')
+    ax[1].legend(loc='upper left')
+
+    ax[0].axvline(tmax/2/tau,ls='--',c='k')
+    ax[1].axvline((tmax/2 + delay)/tau,ls='--',c='k')
+
+    fig.tight_layout()
+    plt.show()
 
     #Get fake measurements
     Tc,Xc,Ec = season_sample(TDRW, XDRW, T_season=180, dt=7, Eav=0.2, Espread=0.2, Emethod='gauss', garble=True, rand_space=True)
@@ -359,7 +368,7 @@ if __name__=="__main__":
     ax2[0].set_ylabel("Signal Strength")
     ax2[0].set_yticks([], [])
     ax2[0].axvline(tmax/2/tau,ls='--',c='k')
-    
+
     ax2[1].errorbar(Tl/tau,Xl,El, fmt="none",c='green')
     ax2[1].set_xlabel("time/timescale")
     ax2[1].set_ylabel("Signal Strength")
@@ -374,7 +383,7 @@ if __name__=="__main__":
     plt.ylabel("Signal Strength")
     plt.yticks([], [])
     plt.show()
-    
+
 
 #==================================
 

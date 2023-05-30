@@ -211,11 +211,14 @@ def do_chain_contours(folder, grade, sim_params=None, MCMC_params=None,  mode='a
         # Load fixed parameters
         paramnames = ["$ln|\sigma_c|$", "$ln|t_c|$", "$\Delta t_1$", "$w_1$", "$\sigma_1$", "$\Delta t_2$", "$w_2$","$\sigma_2$"]
         fixed        = MCMC_params.get_fixed_array(runtype=runtype)
-        truth_params = sim_params.get_truth(runtype=runtype)
+        try:
+            truth_params = sim_params.get_truth(runtype=runtype)
+        except:
+            truth_params = None
 
         #Trim chain, truth values and param names to the required size
         cc_chain = np.delete(CHAIN, [i for i in range(len(fixed)) if fixed[i] == 0], 1) #Trim the chain fixed chain columns
-        truth_params = [truth for i, truth in enumerate(truth_params) if fixed[i] == 1]
+        if type(truth_params)!=type(None): truth_params = [truth for i, truth in enumerate(truth_params) if fixed[i] == 1]
         if runtype == 'line1': paramnames = paramnames[:5]
         if runtype == 'line2': paramnames = paramnames[:2] + paramnames[5:]
         paramnames = [name for i, name in enumerate(paramnames) if fixed[i] == 1]
@@ -233,8 +236,11 @@ def do_chain_contours(folder, grade, sim_params=None, MCMC_params=None,  mode='a
             #Make Chainconsumer plot
             delay_cc = chainconsumer.ChainConsumer().add_chain(np.vstack([CHAIN[:, 2], CHAIN[:, 5]]).T, parameters=["$\Delta t_1$", "$\Delta t_2$"])
             delay_cc.configure(colors=[twoline_color], sigmas=contour_sigmas, summary = False)
-            cfig = delay_cc.plotter.plot(truth=[sim_params.delay1, sim_params.delay2], extents=[(0,taumax),(0,taumax)])
-
+            if type(truth_params)!=type(None):
+                cfig = delay_cc.plotter.plot(truth=[sim_params.delay1, sim_params.delay2], extents=[(0,taumax),(0,taumax)])
+            else:
+                cfig = delay_cc.plotter.plot(extents=[(0,taumax),(0,taumax)])
+            
             #Arrange and save figure
             cfig.tight_layout()
             cfig.savefig(folder + "/contours_delaysonly-twoline-%s.png" % (grade), format='png')
@@ -292,9 +298,13 @@ def do_comparison_contours(folder, grade, sim_params=None, MCMC_params=None, ver
     CHAIN_twoline_lags = np.vstack([CHAIN_twoline[:, 2], CHAIN_twoline[:, 5]]).T
     CHAIN_oneline_lags = np.vstack([CHAIN_line1[:, 2], CHAIN_line2[:, 2]]).T
 
-    truth_params = sim_params.get_truth(runtype = 'twoline')
+    try:
+        truth_params = sim_params.get_truth(runtype = 'twoline')
+        truth_params = [truth for i, truth in enumerate(truth_params) if fixed[i] == 1]
+    except:
+        truth_params = None    
     fixed        = MCMC_params.get_fixed_array(runtype='twoline')
-    truth_params = [truth for i, truth in enumerate(truth_params) if fixed[i] == 1]
+
 
     #(Messily) load chains into the chain consumers
     paramnames  = ["$ln|\sigma_c|$", "$ln|t_c|$", "$\Delta t_1$", "$w_1$", "$\sigma_1$", "$\Delta t_2$", "$w_2$","$\sigma_2$"]
@@ -321,16 +331,20 @@ def do_comparison_contours(folder, grade, sim_params=None, MCMC_params=None, ver
     #Do plots
         # All Parameters
     main_chain.configure(colors=[twoline_color,line1_color,line2_color],linestyles=["-", "--","--"], shade_alpha=[.6,.8,.8],sigmas=contour_sigmas)
-    mainplot = main_chain.plotter.plot(truth=truth_params)#[DISABLED]
-    #mainplot = main_chain.plotter.plot() 
+    try:
+        mainplot = main_chain.plotter.plot(truth=truth_params)
+    except:
+        mainplot = main_chain.plotter.plot()
     mainplot.tight_layout()
     mainplot.savefig(folder+"/contours_combined_all-%s" %grade)
     plt.close(mainplot)
 
         #Delay delay comparison
     delay_chain.configure(colors=[twoline_color,'cyan'],linestyles=['-','-'],shade_alpha=[.6,.6], legend_kwargs={"loc": "upper left", "fontsize": 10},legend_location=(0, 0),sigmas=contour_sigmas)
-    delayplot = delay_chain.plotter.plot(truth=[sim_params.delay1,sim_params.delay2])#[DISABLED]
-    #delayplot = delay_chain.plotter.plot() 
+    try:
+        delayplot = delay_chain.plotter.plot(truth=[sim_params.delay1,sim_params.delay2])
+    except:
+        delayplot = delay_chain.plotter.plot() 
     delayplot.tight_layout()
     delayplot.savefig(folder+"/contours_combined_delaysonly-%s" %grade)
     plt.close(delayplot)
